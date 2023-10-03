@@ -75,36 +75,107 @@ class ExampleClass:
         return self.slow_double_internal_state()
 
 
-example_class = ExampleClass()
+def test_with_cache_and_invalidation():
+    # Correct behavior and fast
+    example_class = ExampleClass()
 
-t0 = time.time()
-output0 = example_class.slow_double_internal_state_with_cache_and_invalidation
-t1 = time.time()
-cached_output0 = (
-    example_class.slow_double_internal_state_with_cache_and_invalidation
-)
-t2 = time.time()
+    t0 = time.time()
+    output0 = example_class.slow_double_internal_state_with_cache_and_invalidation
+    t1 = time.time()
+    cached_output0 = (
+        example_class.slow_double_internal_state_with_cache_and_invalidation
+    )
+    t2 = time.time()
 
-example_class.update_state()
-t3 = time.time()
-output1 = example_class.slow_double_internal_state_with_cache_and_invalidation
-t4 = time.time()
-cached_output1 = (
-    example_class.slow_double_internal_state_with_cache_and_invalidation
-)
-t5 = time.time()
+    example_class.update_state()
+    t3 = time.time()
+    output1 = example_class.slow_double_internal_state_with_cache_and_invalidation
+    t4 = time.time()
+    cached_output1 = (
+        example_class.slow_double_internal_state_with_cache_and_invalidation
+    )
+    t5 = time.time()
 
-compute_output0_time = t1 - t0
-compute_cached_output0_time = t2 - t1
-compute_output1_time = t4 - t3
-compute_cached_output1_time = t5 - t4
+    compute_output0_time = t1 - t0
+    compute_cached_output0_time = t2 - t1
+    compute_output1_time = t4 - t3
+    compute_cached_output1_time = t5 - t4
 
-assert output0 == cached_output0
-assert output0 != output1
-assert output1 == cached_output1
+    assert output0 == cached_output0
+    assert output0 != output1
+    assert output1 == cached_output1
 
-assert compute_output0_time > SLOW_FUNCTION_TIME_MIN_SECONDS
-assert compute_cached_output0_time < CACHE_ACCESS_TIME_MAX_SECONDS
-assert compute_output1_time > SLOW_FUNCTION_TIME_MIN_SECONDS
-assert compute_cached_output1_time < CACHE_ACCESS_TIME_MAX_SECONDS
+    assert compute_output0_time > SLOW_FUNCTION_TIME_MIN_SECONDS
+    assert compute_cached_output0_time < CACHE_ACCESS_TIME_MAX_SECONDS
+    assert compute_output1_time > SLOW_FUNCTION_TIME_MIN_SECONDS
+    assert compute_cached_output1_time < CACHE_ACCESS_TIME_MAX_SECONDS
+
+
+def test_with_cache_no_invalidation():
+    # Fast but incorrect behavior
+    example_class = ExampleClass()
+
+    t0 = time.time()
+    output0 = example_class.slow_double_internal_state_with_cache_no_invalidation
+    t1 = time.time()
+    cached_output0 = example_class.slow_double_internal_state_with_cache_no_invalidation
+    t2 = time.time()
+
+    example_class.update_state()
+    t3 = time.time()
+    output1 = example_class.slow_double_internal_state_with_cache_no_invalidation
+    t4 = time.time()
+    cached_output1 = example_class.slow_double_internal_state_with_cache_no_invalidation
+    t5 = time.time()
+
+    compute_output0_time = t1 - t0
+    compute_cached_output0_time = t2 - t1
+    compute_output1_time = t4 - t3
+    compute_cached_output1_time = t5 - t4
+
+    assert output0 == cached_output0
+    assert output0 == output1
+    assert output1 == cached_output1
+
+    assert compute_output0_time > SLOW_FUNCTION_TIME_MIN_SECONDS
+    assert compute_cached_output0_time < CACHE_ACCESS_TIME_MAX_SECONDS
+    assert compute_output1_time < CACHE_ACCESS_TIME_MAX_SECONDS
+    assert compute_cached_output1_time < CACHE_ACCESS_TIME_MAX_SECONDS
+
+
+def test_no_cache():
+    # Correct behavior but slow
+    example_class = ExampleClass()
+
+    t0 = time.time()
+    output0 = example_class.slow_double_internal_state_no_cache
+    t1 = time.time()
+    uncached_output0 = example_class.slow_double_internal_state_no_cache
+    t2 = time.time()
+
+    example_class.update_state()
+    t3 = time.time()
+    output1 = example_class.slow_double_internal_state_no_cache
+    t4 = time.time()
+    uncached_output1 = example_class.slow_double_internal_state_no_cache
+    t5 = time.time()
+
+    compute_output0_time = t1 - t0
+    compute_uncached_output0_time = t2 - t1
+    compute_output1_time = t4 - t3
+    compute_uncached_output1_time = t5 - t4
+
+    assert output0 == uncached_output0
+    assert output0 != output1
+    assert output1 == uncached_output1
+
+    assert compute_output0_time > SLOW_FUNCTION_TIME_MIN_SECONDS
+    assert compute_uncached_output0_time > SLOW_FUNCTION_TIME_MIN_SECONDS
+    assert compute_output1_time > SLOW_FUNCTION_TIME_MIN_SECONDS
+    assert compute_uncached_output1_time > SLOW_FUNCTION_TIME_MIN_SECONDS
+
+
+test_with_cache_and_invalidation()
+test_with_cache_no_invalidation()
+test_no_cache()
 ```

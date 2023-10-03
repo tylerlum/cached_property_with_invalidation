@@ -50,6 +50,7 @@ class ExampleClass:
 
 
 def test_with_cache_and_invalidation():
+    # Correct behavior and fast
     example_class = ExampleClass()
 
     t0 = time.time()
@@ -85,6 +86,7 @@ def test_with_cache_and_invalidation():
 
 
 def test_with_cache_no_invalidation():
+    # Fast but incorrect behavior
     example_class = ExampleClass()
 
     t0 = time.time()
@@ -116,6 +118,7 @@ def test_with_cache_no_invalidation():
 
 
 def test_no_cache():
+    # Correct behavior but slow
     example_class = ExampleClass()
 
     t0 = time.time()
