@@ -3,10 +3,6 @@ from cached_property_with_invalidation import (
 )
 import time
 
-SLOW_FUNCTION_TIME_MIN_SECONDS = 0.1
-CACHE_ACCESS_TIME_MAX_SECONDS = 0.01
-INVALIDATION_VARIABLE_NAME = "counter"
-
 
 try:
     from functools import cached_property
@@ -20,6 +16,11 @@ except ImportError:
             return func(self)
 
         return wrapped_method
+
+
+SLOW_FUNCTION_TIME_MIN_SECONDS = 0.1
+CACHE_ACCESS_TIME_MAX_SECONDS = 0.01
+INVALIDATION_VARIABLE_NAME = "counter"
 
 
 class ExampleClass:
