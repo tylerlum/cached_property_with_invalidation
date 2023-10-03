@@ -1,42 +1,44 @@
-def cached_property_with_invalidation(
-    invaidation_variable_name: str, cached_property_name: str
-):
+def cached_property_with_invalidation(invalidation_variable_name: str):
     """Decorator to create cached_property that can be invalidated when invalidation variable is updated
 
     Args:
-        invaidation_variable_name (str): instance variable name that will be used to invalidate the cached_property if updated to new value
-        cached_property_name (str): Name
+        invalidation_variable_name (str): instance variable name that will be used to invalidate the cached_property if updated to new value
     """
 
-    def decorator(cached_property_method):
-        def wrapped_cached_property_method(self):
+    def decorator(property_method):
+        @property
+        def wrapped_method(self):
+            property_name = property_method.__name__
             VERBOSE = False
 
             assert hasattr(
-                self, invaidation_variable_name
-            ), f"Instance variable {invaidation_variable_name} does not exist"
-            invalidation_variable = getattr(self, invaidation_variable_name)
+                self, invalidation_variable_name
+            ), f"Instance variable {invalidation_variable_name} does not exist"
+            invalidation_variable = getattr(self, invalidation_variable_name)
 
-            # Custom variable names to store
-            cached_invalidation_variable_name = (
-                f"_cached_invalidation_variable_for_{cached_property_name}"
-            )
-            cached_value_variable_name = f"_cached_value_for_{cached_property_name}"
+            # Dict of dicts to store cache
+            # First key: invalidation variable
+            # Second key: property name
+            cache_dict_name = "_property_with_invalidation_dict"
+            if not hasattr(self, cache_dict_name):
+                setattr(self, cache_dict_name, {})
+            cache_dict = getattr(self, cache_dict_name)
 
-            # Return cached value
-            if hasattr(
-                self, cached_invalidation_variable_name
-            ) and invalidation_variable == getattr(
-                self, cached_invalidation_variable_name
-            ):
+            if invalidation_variable not in cache_dict:
+                cache_dict[invalidation_variable] = {}
+
+            if not property_name in cache_dict[invalidation_variable]:
                 if VERBOSE:
-                    print(f"USING CACHE for {cached_property_name}")
-                return getattr(self, cached_value_variable_name)
+                    print(f"Recomputing for {property_name}")
+                new_value = property_method(self)
+                # Update cache
+                cache_dict[invalidation_variable][property_name] = new_value
+                return new_value
+            else:
+                if VERBOSE:
+                    print(f"Using cache for {property_name}")
+                return cache_dict[invalidation_variable][property_name]
 
-            # Update cached value
-            if VERBOSE:
-                print(f"UPDATING CACHE for {cached_property_name}")
-            new_value = cached_property_method(self)
-            setattr(self, cached_value_variable_name, new_value)
-            setattr(self, cached_invalidation_variable_name, invalidation_variable)
-            return new_value
+        return wrapped_method
+
+    return decorator
