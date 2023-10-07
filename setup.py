@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 DESCRIPTION = "Decorator to create cached_property that can be invalidated when invalidation variable is updated"
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
@@ -11,6 +11,7 @@ setup(
     version=VERSION,
     author="Tyler Lum",
     author_email="tylergwlum@gmail.com",
+    url="https://github.com/tylerlum/cached_property_with_invalidation",
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
